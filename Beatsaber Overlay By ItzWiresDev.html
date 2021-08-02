@@ -1,0 +1,251 @@
+<html>
+    <html>
+        <title>Beatsaber Overlay By ItzWiresDev#6193</title>
+
+        <style>
+            body{
+                padding: 0;
+                margin: 0;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                font-size: 15px;
+                font-weight: 800;
+                color: lightgray;
+            }
+
+            .stats{
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                font-size: 15px;
+                font-weight: 800;
+            }
+
+            .songDetails{
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                font-size: 15px;
+                font-weight: 800;
+            }
+
+            .img{
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+            }
+
+            .column {
+                float: left;
+                width: 50%;
+            }
+
+            .row:after {
+                content: "";
+                display: table;
+                clear: both;
+            }
+
+            .txt2{
+                position: fixed;
+                bottom: 0px;
+                left: 90px;
+            }
+
+            .txt1{
+                position: fixed;
+                bottom: 20px;
+                left: 90px;
+            }
+            
+            .moreStats{
+                position: fixed;
+                bottom: 80px;
+            }
+
+            .health{
+                position: fixed;
+                transition: 0.25s;
+                border-radius: 5px 5px 0 0;
+                bottom: 5px;
+                right: 40px;
+                width: 20px;
+                background: #cfcfcf55;
+                height: 50%;
+                text-align: center;
+                color: black;
+            }
+
+            .time{
+                position: fixed;
+                transition: 0.25s;
+                border-radius: 5px 5px 0 0;
+                bottom: 5px;
+                right: 10px;
+                width: 20px;
+                background: #cfcfcf55;
+                height: 50%;
+                text-align: center;
+                color: black;
+            }
+        </style>
+    </html>
+    <body>
+        <text class="stats" id="stats">
+            FPS: 0<br>
+            NJS: 0<br>
+            BPM: 0<br>
+        </text>
+
+        <div class="time" id="time"><p style="transform: rotate(90deg); text-align: center;">Time</p></div>
+
+        <div class="health" id="health"><p style="transform: rotate(90deg); text-align: center;">Health</p></div>
+
+        <text class="songDetails">
+            <div class="moreStats" id="moreStats">
+                Score: 123<br>
+                Combo: 123<br>
+                Rank: E<br>
+            </div>
+            <div class="row">
+                <div class="column">
+                    <img class="img" draggable="false" id="img" width="70px">
+                </div>
+                <div class="column">
+                    <h2 class="txt1" id="sname">In Menu</h2>
+                    <h3 class="txt2" id="sauthor"></h3>
+                </div>
+            </div>
+        </text>
+    </body>
+
+    <script>
+        let type = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert +']
+        let img = ''
+    
+        fetch('http://localhost:2078/api').then(res => res.json()).then(res => {
+            document.getElementById('stats').innerHTML = 'FPS: '+res.fps+'<br>NJS: '+res.njs+'<br>BPM: '+res.bpm+'<br>'
+            document.getElementById('moreStats').innerHTML = 'Score: '+res.score+'<br>Combo: '+res.combo+'<br>Rank: '+res.rank+'<br>'
+            document.getElementById('health').style.height = res.energy * 100 + '%'
+            document.getElementById('time').style.height = (res.time / res.endTime) * 100 + '%'
+
+            if(res.location != 0){
+                if(res.img != img){
+                    setImg(res.img)
+                    img = res.img
+                }
+                
+                document.getElementById('sname').innerHTML =  res.levelName + ' (' + type[res.difficulty] + ')'
+                if(res.mapAuthor === ""){
+                    document.getElementById('sauthor').innerHTML =  res.songAuthor
+                } else{
+                    document.getElementById('sauthor').innerHTML =  res.songAuthor + ' [' + res.levelAuthor + ']'
+                }
+            } else{
+                if(res.paused){
+                    if(res.img != img){
+                        setImg(res.img)
+                        img = res.img
+                    }
+                    document.getElementById('sname').innerHTML =  res.levelName + ' (' + type[res.difficulty] + ')'
+                    if(res.mapAuthor === ""){
+                        document.getElementById('sauthor').innerHTML =  res.songAuthor
+                    } else{
+                        document.getElementById('sauthor').innerHTML =  res.songAuthor + ' [' + res.levelAuthor + ']'
+                    }
+                } else{
+                    if(res.img != img){
+                        setImg(res.img)
+                        img = res.img
+                    }
+                    document.getElementById('sname').innerHTML =  "In Menu"
+                    document.getElementById('sauthor').innerHTML =  ''
+                }
+            }
+        })
+    
+        setInterval(function(){
+            fetch('http://localhost:2078/api').then(res => res.json()).then(res => {
+                document.getElementById('stats').innerHTML = 'FPS: '+res.fps+'<br>NJS: '+res.njs+'<br>BPM: '+res.bpm+'<br>'
+                document.getElementById('health').style.height = res.energy * 100 + '%'
+                document.getElementById('moreStats').innerHTML = 'Score: '+res.score+'<br>Combo: '+res.combo+'<br>Rank: '+res.rank+'<br>'
+                document.getElementById('time').style.height = (res.time / res.endTime) * 100 + '%'
+
+                if(res.location != 0){
+                    if(res.img != img){
+                        setImg(res.img)
+                        img = res.img
+                    }
+    
+                    if(res.location === 5){
+                        document.getElementById('sname').innerHTML = 'In Multiplayer Lobby'
+                        document.getElementById('sauthor').innerHTML = res.players + ' out of ' + res.maxPlayers
+                    } else{
+                        if(res.location === 2){
+                            document.getElementById('sname').innerHTML =  res.levelName + ' (' + type[res.difficulty] + ') Multiplayer'
+                            if(res.mapAuthor === ""){
+                                document.getElementById('sauthor').innerHTML =  res.songAuthor
+                            } else{
+                                document.getElementById('sauthor').innerHTML =  res.songAuthor + ' [' + res.levelAuthor + ']'
+                            }
+                        } else {
+                            if(res.location === 4){
+                                document.getElementById('sname').innerHTML =  res.levelName + ' (' + type[res.difficulty] + ') Campaign'
+                                if(res.mapAuthor === ""){
+                                    document.getElementById('sauthor').innerHTML =  res.songAuthor
+                                } else{
+                                    document.getElementById('sauthor').innerHTML =  res.songAuthor + ' [' + res.levelAuthor + ']'
+                                }
+                            } else{
+                                if(res.location === 4){
+                                    document.getElementById('sname').innerHTML =  res.levelName + ' (' + type[res.difficulty] + ') Tutorial'
+                                    if(res.mapAuthor === ""){
+                                        document.getElementById('sauthor').innerHTML =  res.songAuthor
+                                    } else{
+                                        document.getElementById('sauthor').innerHTML =  res.songAuthor + ' [' + res.levelAuthor + ']'
+                                    }
+                                } else{
+                                    document.getElementById('sname').innerHTML =  res.levelName + ' (' + type[res.difficulty] + ')'
+                                    if(res.mapAuthor === ""){
+                                        document.getElementById('sauthor').innerHTML =  res.songAuthor
+                                    } else{
+                                        document.getElementById('sauthor').innerHTML =  res.songAuthor + ' [' + res.levelAuthor + ']'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else{
+                    if(res.paused){
+                        if(res.img != img){
+                            setImg(res.img)
+                            img = res.img
+                        }
+                        document.getElementById('sname').innerHTML =  res.levelName + ' (' + type[res.difficulty] + ')'
+                        if(res.mapAuthor === ""){
+                            document.getElementById('sauthor').innerHTML =  res.songAuthor
+                        } else{
+                            document.getElementById('sauthor').innerHTML =  res.songAuthor + ' [' + res.levelAuthor + ']'
+                        }
+                    } else{
+                        if(res.img != img){
+                            setImg(res.img)
+                            img = res.img
+                        }
+                        document.getElementById('sname').innerHTML =  "In Menu"
+                        document.getElementById('sauthor').innerHTML =  ''
+                    }
+                }
+            })
+        }, 500)
+
+        function setImg(img1){
+            if(!img1)return;
+
+            if(document.getElementById('img').src !== img1){
+                document.getElementById('img').src = img1
+            } else{
+                console.log('nope')
+            }
+        }
+    </script>
+</html>
